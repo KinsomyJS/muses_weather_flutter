@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
-
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:muses_weather_flutter_example/model/weather_info.dart';
@@ -17,6 +17,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   double screenWidth = 0.0;
   File _image;
+  List citiesMap;
   WeatherInfo weatherInfo = new WeatherInfo(
       realtime: new Realtime(),
       pm25: new PM25(),
@@ -35,6 +36,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     _getImagePath();
     _fetchWeatherInfo("101190101");
+    _loadStudent();
   }
 
   @override
@@ -53,7 +55,7 @@ class _HomePageState extends State<HomePage> {
           children: <Widget>[
             new Container(
               child: _image == null
-                  ? new Image.asset("images/bg.jpg",fit: BoxFit.fill)
+                  ? new Image.asset("images/bg.jpg", fit: BoxFit.fill)
                   : new Image.file(_image, fit: BoxFit.fill),
               height: double.infinity,
               width: double.infinity,
@@ -76,8 +78,8 @@ class _HomePageState extends State<HomePage> {
                           child: new TextField(
                             controller: searchController,
                             textInputAction: TextInputAction.search,
-                            onSubmitted: (String _){
-                              _fetchWeatherInfo(_);
+                            onSubmitted: (String _) {
+                              _fetchWeatherInfo(_getIdByName(_));
                             },
                             maxLines: 1,
                             style: TextStyle(
@@ -206,10 +208,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  List<Widget> _buildLivingIndexes(List<Index> indexes){
+  List<Widget> _buildLivingIndexes(List<Index> indexes) {
     List<Widget> widgets = new List();
     if (indexes.length > 0) {
-      for(Index index in indexes){
+      for (Index index in indexes) {
         widgets.add(_buildLivingIndex(index));
       }
     }
@@ -224,12 +226,14 @@ class _HomePageState extends State<HomePage> {
           EdgeInsets.only(left: 15.0, right: 15.0, top: 10.0, bottom: 10.0),
       child: Row(
         children: <Widget>[
-          Image.asset("images/"+index.abbreviation +".png", width: 40.0, fit: BoxFit.fitWidth),
+          Image.asset("images/" + index.abbreviation + ".png",
+              width: 40.0, fit: BoxFit.fitWidth),
           Padding(padding: EdgeInsets.only(right: 10.0)),
           Column(
             children: <Widget>[
               Container(
-                child: Text(index.name + " " + index.level, style: TextStyle(color: Colors.white)),
+                child: Text(index.name + " " + index.level,
+                    style: TextStyle(color: Colors.white)),
                 width: 280.0,
               ),
               Padding(padding: EdgeInsets.only(top: 10.0)),
@@ -245,10 +249,20 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Future<String> _loadCitiesAsset() async {
+    return await rootBundle.loadString('data/cities.json');
+  }
+
+  Future _loadStudent() async {
+    String jsonString = await _loadCitiesAsset();
+    citiesMap = json.decode(jsonString)['cities'];
+//    print("====="+citiesMap[0]['city']);
+  }
+
   _getImagePath() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String path = prefs.get("bgpath");
-    if(path != null){
+    if (path != null) {
       setState(() {
         _image = new File(path);
       });
@@ -258,6 +272,16 @@ class _HomePageState extends State<HomePage> {
   _setImagePath(String path) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString("bgpath", path);
+  }
+
+  String _getIdByName(String name) {
+    if (citiesMap.length > 0) {
+      for (Map map in citiesMap) {
+        if (map['city'] == name) {
+          return map['cityid'];
+        }
+      }
+    }
   }
 
   _fetchWeatherInfo(String id) async {
