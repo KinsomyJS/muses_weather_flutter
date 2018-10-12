@@ -17,7 +17,11 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   double screenWidth = 0.0;
   File _image;
-  WeatherInfo weatherInfo = new WeatherInfo(realtime: new Realtime(),pm25: new PM25(),indexes: new List(),weathers: new List());
+  WeatherInfo weatherInfo = new WeatherInfo(
+      realtime: new Realtime(),
+      pm25: new PM25(),
+      indexes: new List(),
+      weathers: new List());
 
   Future getImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
@@ -35,6 +39,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final searchController = TextEditingController();
     final theme = Theme.of(context);
     return new MaterialApp(
       home: new Scaffold(
@@ -48,7 +53,7 @@ class _HomePageState extends State<HomePage> {
           children: <Widget>[
             new Container(
               child: _image == null
-                  ? null
+                  ? new Image.asset("images/bg.jpg",fit: BoxFit.fill)
                   : new Image.file(_image, fit: BoxFit.fill),
               height: double.infinity,
               width: double.infinity,
@@ -69,15 +74,15 @@ class _HomePageState extends State<HomePage> {
                         child: new Theme(
                           data: theme.copyWith(primaryColor: Colors.white),
                           child: new TextField(
+                            controller: searchController,
+                            textInputAction: TextInputAction.search,
+                            onSubmitted: (String _){
+                              _fetchWeatherInfo(_);
+                            },
                             maxLines: 1,
                             style: TextStyle(
                                 fontSize: 16.0, color: Colors.white), //输入文本的样式
                             decoration: InputDecoration(
-//                              //bug doesn't work
-//                              border: new UnderlineInputBorder(
-//                                  borderSide: new BorderSide(
-//                                      color: Colors.white,
-//                                      style: BorderStyle.solid)),
                               hintText: '查询其他城市',
                               hintStyle: TextStyle(
                                   fontSize: 14.0, color: Colors.white),
@@ -92,7 +97,7 @@ class _HomePageState extends State<HomePage> {
                     Container(
                       margin: EdgeInsets.only(top: 30.0),
                       child: Text(
-                        weatherInfo.city==null?"XX":weatherInfo.city,
+                        weatherInfo.city == null ? "XX" : weatherInfo.city,
                         style: new TextStyle(
                             fontSize: 18.0,
                             color: Colors.white,
@@ -102,7 +107,7 @@ class _HomePageState extends State<HomePage> {
                     Container(
                       margin: EdgeInsets.only(top: 40.0),
                       child: Text(
-                        (weatherInfo.realtime.temp??="XX") + "℃",
+                        (weatherInfo.realtime.temp ??= "XX") + "℃",
                         style: new TextStyle(
                             fontSize: 80.0,
                             color: Colors.white,
@@ -112,7 +117,7 @@ class _HomePageState extends State<HomePage> {
                     Container(
                       margin: EdgeInsets.only(top: 40.0),
                       child: Text(
-                        weatherInfo.realtime.weather??="XX",
+                        weatherInfo.realtime.weather ??= "XX",
                         style: new TextStyle(
                             fontSize: 16.0,
                             color: Colors.white,
@@ -128,7 +133,9 @@ class _HomePageState extends State<HomePage> {
                           padding: EdgeInsets.only(
                               left: 5.0, right: 5.0, top: 2.0, bottom: 2.0),
                           child: Text(
-                            (weatherInfo.pm25.aqi??="00")+ " " +  (weatherInfo.pm25.quality??="未知"),
+                            (weatherInfo.pm25.aqi ??= "00") +
+                                " " +
+                                (weatherInfo.pm25.quality ??= "未知"),
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
@@ -138,19 +145,12 @@ class _HomePageState extends State<HomePage> {
                       margin: EdgeInsets.only(top: 20.0),
                       color: Color(0x3399CCFF),
                       child: Row(
-                        children: <Widget>[
-                          _buildFutureWeather(weatherInfo.weathers[0].week,weatherInfo.weathers[0].weather,weatherInfo.weathers[0].temp_day_c+ " ~ "+weatherInfo.weathers[0].temp_night_c),
-                          _buildFutureWeather(weatherInfo.weathers[1].week,weatherInfo.weathers[1].weather,weatherInfo.weathers[1].temp_day_c+ " ~ "+weatherInfo.weathers[1].temp_night_c),
-                          _buildFutureWeather(weatherInfo.weathers[2].week,weatherInfo.weathers[2].weather,weatherInfo.weathers[2].temp_day_c+ " ~ "+weatherInfo.weathers[2].temp_night_c),
-                          _buildFutureWeather(weatherInfo.weathers[3].week,weatherInfo.weathers[3].weather,weatherInfo.weathers[3].temp_day_c+ " ~ "+weatherInfo.weathers[3].temp_night_c),
-                        ],
+                        children: _buildFutureWeathers(weatherInfo.weathers),
                       ),
                     ),
-                    _buildLivingIndex(),
-                    _buildLivingIndex(),
-                    _buildLivingIndex(),
-                    _buildLivingIndex(),
-                    _buildLivingIndex(),
+                    Column(
+                      children: _buildLivingIndexes(weatherInfo.indexes),
+                    )
                   ],
                 ),
               ),
@@ -161,7 +161,26 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildFutureWeather(String week,String weather,String temp) {
+  List<Widget> _buildFutureWeathers(List<Weather> weathers) {
+    List<Widget> widgets = new List();
+    if (weathers.length > 0) {
+      int index = 0;
+
+      for (Weather weather in weathers) {
+        widgets.add(_buildFutureWeather(
+            index == 0 ? "今天" : weather.week,
+            weather.weather,
+            weather.temp_day_c + " ~ " + weather.temp_night_c));
+        index++;
+        if (index == 5) {
+          break;
+        }
+      }
+    }
+    return widgets;
+  }
+
+  Widget _buildFutureWeather(String week, String weather, String temp) {
     return new Expanded(
       flex: 1,
       child: new Column(
@@ -173,7 +192,7 @@ class _HomePageState extends State<HomePage> {
           ),
           Padding(padding: EdgeInsets.only(top: 10.0)),
           Text(
-            temp+"℃",
+            temp + "℃",
             style: TextStyle(color: Colors.white),
           ),
           Padding(padding: EdgeInsets.only(top: 10.0)),
@@ -187,7 +206,17 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildLivingIndex() {
+  List<Widget> _buildLivingIndexes(List<Index> indexes){
+    List<Widget> widgets = new List();
+    if (indexes.length > 0) {
+      for(Index index in indexes){
+        widgets.add(_buildLivingIndex(index));
+      }
+    }
+    return widgets;
+  }
+
+  Widget _buildLivingIndex(Index index) {
     return new Container(
       color: Color(0x3399CCFF),
       margin: EdgeInsets.only(top: 10.0),
@@ -195,17 +224,17 @@ class _HomePageState extends State<HomePage> {
           EdgeInsets.only(left: 15.0, right: 15.0, top: 10.0, bottom: 10.0),
       child: Row(
         children: <Widget>[
-          Image.asset("images/clothing.png", width: 40.0, fit: BoxFit.fitWidth),
+          Image.asset("images/"+index.abbreviation +".png", width: 40.0, fit: BoxFit.fitWidth),
           Padding(padding: EdgeInsets.only(right: 10.0)),
           Column(
             children: <Widget>[
               Container(
-                child: Text("穿衣指数 较舒适", style: TextStyle(color: Colors.white)),
+                child: Text(index.name + " " + index.level, style: TextStyle(color: Colors.white)),
                 width: 280.0,
               ),
               Padding(padding: EdgeInsets.only(top: 10.0)),
               Container(
-                child: Text("建议着薄外套、开衫牛仔裤等服装。年老体弱者应当适当添加衣物，宜着夹克衫、薄毛衣等。",
+                child: Text(index.content,
                     style: TextStyle(color: Colors.white, fontSize: 12.0)),
                 width: 280.0,
               ),
@@ -219,9 +248,11 @@ class _HomePageState extends State<HomePage> {
   _getImagePath() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String path = prefs.get("bgpath");
-    setState(() {
-      _image = new File(path);
-    });
+    if(path != null){
+      setState(() {
+        _image = new File(path);
+      });
+    }
   }
 
   _setImagePath(String path) async {
@@ -248,7 +279,7 @@ class _HomePageState extends State<HomePage> {
         print("============data is empty==============");
       }
     } catch (exception) {
-      print("============="+exception.toString()+"===============");
+      print("=============" + exception.toString() + "===============");
     }
   }
 }
