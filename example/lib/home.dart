@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:muses_weather_flutter_example/model/weather_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,6 +17,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   double screenWidth = 0.0;
   File _image;
+  WeatherInfo weatherInfo = new WeatherInfo(realtime: new Realtime(),pm25: new PM25(),indexes: new List(),weathers: new List());
 
   Future getImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
@@ -90,7 +92,7 @@ class _HomePageState extends State<HomePage> {
                     Container(
                       margin: EdgeInsets.only(top: 30.0),
                       child: Text(
-                        "南京市",
+                        weatherInfo.city==null?"XX":weatherInfo.city,
                         style: new TextStyle(
                             fontSize: 18.0,
                             color: Colors.white,
@@ -100,7 +102,7 @@ class _HomePageState extends State<HomePage> {
                     Container(
                       margin: EdgeInsets.only(top: 40.0),
                       child: Text(
-                        "22°",
+                        (weatherInfo.realtime.temp??="XX") + "℃",
                         style: new TextStyle(
                             fontSize: 80.0,
                             color: Colors.white,
@@ -110,7 +112,7 @@ class _HomePageState extends State<HomePage> {
                     Container(
                       margin: EdgeInsets.only(top: 40.0),
                       child: Text(
-                        "小雨转阴",
+                        weatherInfo.realtime.weather??="XX",
                         style: new TextStyle(
                             fontSize: 16.0,
                             color: Colors.white,
@@ -126,7 +128,7 @@ class _HomePageState extends State<HomePage> {
                           padding: EdgeInsets.only(
                               left: 5.0, right: 5.0, top: 2.0, bottom: 2.0),
                           child: Text(
-                            "良 82",
+                            (weatherInfo.pm25.aqi??="00")+ " " +  (weatherInfo.pm25.quality??="未知"),
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
@@ -137,10 +139,10 @@ class _HomePageState extends State<HomePage> {
                       color: Color(0x3399CCFF),
                       child: Row(
                         children: <Widget>[
-                          _buildFutureWeather(),
-                          _buildFutureWeather(),
-                          _buildFutureWeather(),
-                          _buildFutureWeather(),
+                          _buildFutureWeather(weatherInfo.weathers[0].week,weatherInfo.weathers[0].weather,weatherInfo.weathers[0].temp_day_c+ " ~ "+weatherInfo.weathers[0].temp_night_c),
+                          _buildFutureWeather(weatherInfo.weathers[1].week,weatherInfo.weathers[1].weather,weatherInfo.weathers[1].temp_day_c+ " ~ "+weatherInfo.weathers[1].temp_night_c),
+                          _buildFutureWeather(weatherInfo.weathers[2].week,weatherInfo.weathers[2].weather,weatherInfo.weathers[2].temp_day_c+ " ~ "+weatherInfo.weathers[2].temp_night_c),
+                          _buildFutureWeather(weatherInfo.weathers[3].week,weatherInfo.weathers[3].weather,weatherInfo.weathers[3].temp_day_c+ " ~ "+weatherInfo.weathers[3].temp_night_c),
                         ],
                       ),
                     ),
@@ -159,29 +161,24 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildFutureWeather() {
+  Widget _buildFutureWeather(String week,String weather,String temp) {
     return new Expanded(
       flex: 1,
       child: new Column(
         children: <Widget>[
           Padding(padding: EdgeInsets.only(top: 10.0)),
           Text(
-            "今天",
+            week,
             style: TextStyle(color: Colors.white),
           ),
           Padding(padding: EdgeInsets.only(top: 10.0)),
           Text(
-            "24 ~ 13℃",
+            temp+"℃",
             style: TextStyle(color: Colors.white),
           ),
           Padding(padding: EdgeInsets.only(top: 10.0)),
           Text(
-            "小雨转阴",
-            style: TextStyle(color: Colors.white),
-          ),
-          Padding(padding: EdgeInsets.only(top: 10.0)),
-          Text(
-            "西北风3-4级",
+            weather,
             style: TextStyle(color: Colors.white),
           ),
           Padding(padding: EdgeInsets.only(top: 10.0)),
@@ -241,13 +238,17 @@ class _HomePageState extends State<HomePage> {
     try {
       if (response.statusCode == HttpStatus.ok) {
         var json = await response.transform(Utf8Decoder()).join();
-        var data = jsonDecode(json);
-        print(data["value"][0]);
+        Map map = jsonDecode(json);
+        print(map["value"][0].toString());
+        setState(() {
+          weatherInfo = WeatherInfo.fromJson(map["value"][0]);
+        });
+        print(weatherInfo.city);
       } else {
         print("============data is empty==============");
       }
     } catch (exception) {
-      print("=============exception.toString()===============");
+      print("============="+exception.toString()+"===============");
     }
   }
 }
