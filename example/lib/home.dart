@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> {
         floatingActionButton: new FloatingActionButton(
           onPressed: getImage,
           tooltip: 'Pick Image',
-          child: new Icon(Icons.photo_library),
+          child: new Icon(Icons.photo_library,color: Colors.transparent,),
         ),
         resizeToAvoidBottomPadding: false, //false键盘弹起不重新布局 避免挤压布局
         body: new Stack(
@@ -117,9 +117,19 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     Container(
-                      margin: EdgeInsets.only(top: 40.0),
+                      margin: EdgeInsets.only(top: 20.0),
                       child: Text(
                         weatherInfo.realtime.weather ??= "XX",
+                        style: new TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w100),
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(top: 20.0),
+                      child: Text(
+                        (weatherInfo.realtime.wD ??= "") + " "+ (weatherInfo.realtime.wS ??= ""),
                         style: new TextStyle(
                             fontSize: 16.0,
                             color: Colors.white,
