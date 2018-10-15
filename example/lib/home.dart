@@ -34,8 +34,14 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    _getCityId().then((id) {
+      if (id != "") {
+        _fetchWeatherInfo(id);
+      } else {
+        _fetchWeatherInfo("101010100");
+      }
+    });
     _getImagePath();
-    _fetchWeatherInfo("101190101");
     _loadStudent();
   }
 
@@ -45,11 +51,12 @@ class _HomePageState extends State<HomePage> {
     final theme = Theme.of(context);
     return new MaterialApp(
       home: new Scaffold(
-        floatingActionButton: new FloatingActionButton(
-          onPressed: getImage,
-          tooltip: 'Pick Image',
-          child: new Icon(Icons.photo_library,color: Colors.transparent,),
-        ),
+//        floatingActionButton: new FloatingActionButton(
+//
+//          onPressed: getImage,
+//          tooltip: 'Pick Image',
+//          child: new Icon(Icons.photo_library),
+//        ),
         resizeToAvoidBottomPadding: false, //false键盘弹起不重新布局 避免挤压布局
         body: new Stack(
           children: <Widget>[
@@ -129,7 +136,9 @@ class _HomePageState extends State<HomePage> {
                     Container(
                       margin: EdgeInsets.only(top: 20.0),
                       child: Text(
-                        (weatherInfo.realtime.wD ??= "") + " "+ (weatherInfo.realtime.wS ??= ""),
+                        (weatherInfo.realtime.wD ??= "") +
+                            " " +
+                            (weatherInfo.realtime.wS ??= ""),
                         style: new TextStyle(
                             fontSize: 16.0,
                             color: Colors.white,
@@ -162,7 +171,18 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Column(
                       children: _buildLivingIndexes(weatherInfo.indexes),
-                    )
+                    ),
+                    Padding(padding: EdgeInsets.only(top: 20.0)),
+                    InkWell(
+                      onTap: () {
+                        getImage();
+                      },
+                      child: Text(
+                        "自定义背景",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    Padding(padding: EdgeInsets.only(top: 20.0)),
                   ],
                 ),
               ),
@@ -266,7 +286,6 @@ class _HomePageState extends State<HomePage> {
   Future _loadStudent() async {
     String jsonString = await _loadCitiesAsset();
     citiesMap = json.decode(jsonString)['cities'];
-//    print("====="+citiesMap[0]['city']);
   }
 
   _getImagePath() async {
@@ -282,6 +301,20 @@ class _HomePageState extends State<HomePage> {
   _setImagePath(String path) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString("bgpath", path);
+  }
+
+  _setCityId(String id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString("cityid", id);
+  }
+
+  Future<String> _getCityId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String id = prefs.get("cityid");
+    if (id != null) {
+      return id;
+    }
+    return "";
   }
 
   String _getIdByName(String name) {
@@ -302,6 +335,7 @@ class _HomePageState extends State<HomePage> {
     var response = await request.close();
     try {
       if (response.statusCode == HttpStatus.ok) {
+        _setCityId(id);
         var json = await response.transform(Utf8Decoder()).join();
         Map map = jsonDecode(json);
         print(map["value"][0].toString());
