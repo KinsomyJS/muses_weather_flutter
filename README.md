@@ -2,7 +2,7 @@
 
 使用api为魅族天气api，感谢 [https://github.com/jokermonn/-Api]()
 
-![](https://user-gold-cdn.xitu.io/2018/10/15/166767b9a38b7699?w=1080&h=2932&f=jpeg&s=2066331)
+![](https://user-gold-cdn.xitu.io/2018/10/15/166767b9a38b7699?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
 
 ### 功能
 * 支持全国地级市天气预报
