@@ -62,13 +62,17 @@ Realtime _$RealtimeFromJson(Map<String, dynamic> json) {
   return Realtime(
       temp: json['temp'] as String,
       time: json['time'] as String,
-      weather: json['weather'] as String);
+      weather: json['weather'] as String)
+    ..wS = json['wS'] as String
+    ..wD = json['wD'] as String;
 }
 
 Map<String, dynamic> _$RealtimeToJson(Realtime instance) => <String, dynamic>{
       'temp': instance.temp,
       'time': instance.time,
-      'weather': instance.weather
+      'weather': instance.weather,
+      'wS': instance.wS,
+      'wD': instance.wD
     };
 
 Weather _$WeatherFromJson(Map<String, dynamic> json) {

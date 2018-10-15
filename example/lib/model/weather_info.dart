@@ -41,6 +41,8 @@ class Realtime {
   String temp;
   String time;
   String weather;
+  String wS;
+  String wD;
   Realtime({this.temp,this.time,this.weather});
   factory Realtime.fromJson(Map<String, dynamic> json) => _$RealtimeFromJson(json);
   Map<String, dynamic> toJson() => _$RealtimeToJson(this);
