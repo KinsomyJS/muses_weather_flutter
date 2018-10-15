@@ -2,6 +2,8 @@
 
 使用api为魅族天气api，感谢 [https://github.com/jokermonn/-Api]()
 
+![](https://user-gold-cdn.xitu.io/2018/10/15/166767b9a38b7699?w=1080&h=2932&f=jpeg&s=2066331)
+
 ### 功能
 * 支持全国地级市天气预报
 * 未来五天天气预报查看
