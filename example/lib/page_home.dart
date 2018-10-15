@@ -5,6 +5,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:muses_weather_flutter_example/model/weather_info.dart';
+import 'package:muses_weather_flutter_example/page_cities.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
@@ -51,12 +52,6 @@ class _HomePageState extends State<HomePage> {
     final theme = Theme.of(context);
     return new MaterialApp(
       home: new Scaffold(
-//        floatingActionButton: new FloatingActionButton(
-//
-//          onPressed: getImage,
-//          tooltip: 'Pick Image',
-//          child: new Icon(Icons.photo_library),
-//        ),
         resizeToAvoidBottomPadding: false, //false键盘弹起不重新布局 避免挤压布局
         body: new Stack(
           children: <Widget>[
@@ -64,20 +59,31 @@ class _HomePageState extends State<HomePage> {
               child: _image == null
                   ? new Image.asset("images/bg.jpg", fit: BoxFit.fill)
                   : new Image.file(_image, fit: BoxFit.fill),
-              height: double.infinity,
               width: double.infinity,
             ),
             SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: Container(
                 padding: EdgeInsets.only(top: 30.0),
-                width: double.infinity,
                 decoration: BoxDecoration(
                     color: Color(
                   0x66000000,
                 )),
                 child: Column(
                   children: <Widget>[
+                    Container(
+                      child: InkWell(
+                        child: Icon(
+                          Icons.list,
+                          color: Colors.white,
+                        ),
+                        onTap: (){
+                          Navigator.of(context).pushNamed('/cities');
+                        },
+                      ),
+                      padding: EdgeInsets.only(top: 5.0,right: 20.0),
+                      alignment: Alignment.centerRight,
+                    ),
                     Container(
                         margin: EdgeInsets.only(left: 20.0, right: 20.0),
                         child: new Theme(
@@ -111,6 +117,15 @@ class _HomePageState extends State<HomePage> {
                             fontSize: 18.0,
                             color: Colors.white,
                             fontWeight: FontWeight.w100),
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.only(top: 5.0),
+                      child: Text(
+                        weatherInfo.realtime.time == null
+                            ? " "
+                            : weatherInfo.realtime.time.split(" ")[1] + " 更新",
+                        style: TextStyle(color: Colors.white, fontSize: 12.0),
                       ),
                     ),
                     Container(

@@ -52,6 +52,7 @@ flutter:
      - images/ct.png
      - images/xc.png
      - images/pp.png
+     - images/bg_dy.png
      - data/cities.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
