@@ -9,9 +9,11 @@ import 'package:muses_weather_flutter_example/page_cities.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
+  String id;
+  HomePage(this.id);
   @override
   State<StatefulWidget> createState() {
-    return new _HomePageState();
+    return new _HomePageState(id);
   }
 }
 
@@ -19,6 +21,8 @@ class _HomePageState extends State<HomePage> {
   double screenWidth = 0.0;
   File _image;
   List citiesMap;
+  String extraId;
+  _HomePageState(this.extraId);
   WeatherInfo weatherInfo = new WeatherInfo(
       realtime: new Realtime(),
       pm25: new PM25(),
@@ -35,15 +39,19 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    _getCityId().then((id) {
-      if (id != "") {
-        _fetchWeatherInfo(id);
-      } else {
-        _fetchWeatherInfo("101010100");
-      }
-    });
+    if(extraId != null){
+      _fetchWeatherInfo(extraId);
+    }else{
+      _getCityId().then((id) {
+        if (id != "") {
+          _fetchWeatherInfo(id);
+        } else {
+          _fetchWeatherInfo("101010100");
+        }
+      });
+    }
     _getImagePath();
-    _loadStudent();
+    _loadCities();
   }
 
   @override
@@ -57,9 +65,10 @@ class _HomePageState extends State<HomePage> {
           children: <Widget>[
             new Container(
               child: _image == null
-                  ? new Image.asset("images/bg.jpg", fit: BoxFit.fill)
-                  : new Image.file(_image, fit: BoxFit.fill),
+                  ? new Image.asset("images/bg.jpg", fit: BoxFit.fitHeight)
+                  : new Image.file(_image, fit: BoxFit.fitHeight),
               width: double.infinity,
+              height: double.infinity,
             ),
             SingleChildScrollView(
               scrollDirection: Axis.vertical,
@@ -78,7 +87,9 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.white,
                         ),
                         onTap: (){
-                          Navigator.of(context).pushNamed('/cities');
+                          Navigator.push<String>(context, new MaterialPageRoute(builder: (BuildContext context){
+                            return new Cities();
+                          }));
                         },
                       ),
                       padding: EdgeInsets.only(top: 5.0,right: 20.0),
@@ -298,7 +309,7 @@ class _HomePageState extends State<HomePage> {
     return await rootBundle.loadString('data/cities.json');
   }
 
-  Future _loadStudent() async {
+  Future _loadCities() async {
     String jsonString = await _loadCitiesAsset();
     citiesMap = json.decode(jsonString)['cities'];
   }
@@ -321,6 +332,18 @@ class _HomePageState extends State<HomePage> {
   _setCityId(String id) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString("cityid", id);
+  }
+
+  _setCitiesId(String id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> ids = prefs.getStringList("citiesids");
+    if (ids == null) {
+      ids = new List();
+    }
+    if(!ids.contains(id)){
+      ids.add(id);
+    }
+    await prefs.setStringList("citiesids", ids);
   }
 
   Future<String> _getCityId() async {
@@ -351,6 +374,7 @@ class _HomePageState extends State<HomePage> {
     try {
       if (response.statusCode == HttpStatus.ok) {
         _setCityId(id);
+        _setCitiesId(id);
         var json = await response.transform(Utf8Decoder()).join();
         Map map = jsonDecode(json);
         print(map["value"][0].toString());
