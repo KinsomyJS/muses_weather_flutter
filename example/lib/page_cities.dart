@@ -17,6 +17,7 @@ class Cities extends StatefulWidget {
 }
 
 class CitiesState extends State<Cities> {
+  static String idSelected;
   Map<String, WeatherInfo> cityMap = Map();
   int count;
   @override
@@ -35,7 +36,8 @@ class CitiesState extends State<Cities> {
         floatingActionButton: new FloatingActionButton(
           onPressed: null,
           tooltip: 'add city',
-          child: new Icon(Icons.add),
+          backgroundColor: Colors.white,
+          child: new Icon(Icons.add,color: Colors.black,),
         ),
         appBar: AppBar(
           leading: IconButton(
@@ -124,10 +126,10 @@ class CitiesState extends State<Cities> {
     print("_buildCityWeatherItem============ " + weatherInfo.city);
 
     return new InkWell(
-      onTap: (){
-        Navigator.push<String>(context, new MaterialPageRoute(builder: (BuildContext context){
-          return new HomePage(weatherInfo.cityid.toString());
-        }));
+      onTap: () {
+        idSelected = weatherInfo.cityid.toString();
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
       },
       child: new Container(
           padding: EdgeInsets.only(top: 20.0),
@@ -146,16 +148,25 @@ class CitiesState extends State<Cities> {
                       color: Color(
                     0x33000000,
                   )),
-                  child: Column(
-                    children: <Widget>[
-                      Text(
-                        weatherInfo.city,
-                        style: TextStyle(fontSize: 22.0),
-                      ),
-                      Text(weatherInfo.realtime.weather),
-                      Text(weatherInfo.realtime.temp + "℃")
-                    ],
-                  ),
+                  child: Container(
+                    padding: EdgeInsets.only(top: 10.0,left: 20.0),
+                    alignment: Alignment.topLeft,
+                    child: Column(
+                      children: <Widget>[
+                        Text(
+                          weatherInfo.city,
+                          style: TextStyle(fontSize: 22.0),
+                        ),
+                        Padding(padding: EdgeInsets.only(top: 10.0),),
+                        Container(
+                            child:
+                        Text(weatherInfo.realtime.weather,style: TextStyle(fontSize: 18.0),)),
+
+                        Padding(padding: EdgeInsets.only(top: 10.0),),
+                        Text(weatherInfo.realtime.temp + "℃",style: TextStyle(fontSize: 18.0),)
+                      ],
+                    ),
+                  )
                 )
               ],
             ),
