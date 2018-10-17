@@ -9,6 +9,12 @@ import 'package:muses_weather_flutter_example/page_cities.dart';
 import 'package:muses_weather_flutter_example/page_home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+const String _explanatoryText =
+    "When the Scaffold's floating action button changes, the new button fades and "
+    'turns into view. In this demo, changing tabs can cause the app to be rebuilt '
+    'with a FloatingActionButton that the Scaffold distinguishes from the others '
+    'by its key.';
+
 class Cities extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -18,10 +24,15 @@ class Cities extends StatefulWidget {
 
 class CitiesState extends State<Cities> {
   static String idSelected;
-  Map<String, WeatherInfo> cityMap = Map();
+  Map<String, WeatherInfo> cityMap;
   int count;
+  final searchController = TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
   @override
   void initState() {
+    cityMap = Map();
     _getCitiesId().then((list) {
       for (String id in list) {
         _fetchWeatherInfo(id);
@@ -33,12 +44,12 @@ class CitiesState extends State<Cities> {
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new Scaffold(
-        floatingActionButton: new FloatingActionButton(
-          onPressed: null,
-          tooltip: 'add city',
-          backgroundColor: Colors.white,
-          child: new Icon(Icons.add,color: Colors.black,),
-        ),
+        key: _scaffoldKey,
+        floatingActionButton: FloatingActionButton.extended(
+            tooltip: 'Show textfield',
+            icon: Icon(Icons.add),
+            label: new Text("城市"),
+            onPressed: _showCityTextField),
         appBar: AppBar(
           leading: IconButton(
               icon: Icon(
@@ -56,13 +67,63 @@ class CitiesState extends State<Cities> {
           ),
           centerTitle: true,
         ),
-        body: new Center(
-          child: new ListView(
-            children: _buildCitiesWeather(cityMap),
+        body: new RefreshIndicator(
+          key: _refreshIndicatorKey,
+          onRefresh: _handleRefresh,
+          child: new Center(
+            child: new ListView(
+              children: _buildCitiesWeather(cityMap),
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void _showCityTextField() {
+    _scaffoldKey.currentState.showBottomSheet<Null>((BuildContext context) {
+      return new Container(
+          decoration: new BoxDecoration(
+              border: new Border(
+                  top: new BorderSide(color: Theme.of(context).dividerColor))),
+          child: new Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: new TextField(
+              controller: searchController,
+              textInputAction: TextInputAction.search,
+              onSubmitted: (String name) {
+                searchController.clear();
+                Navigator.pop(context);
+                _setCitiesId(HomePageState.getIdByName(name)).then((_) {
+                  _refreshIndicatorKey.currentState.show();
+                });
+              },
+              maxLines: 1,
+              style: TextStyle(fontSize: 16.0, color: Colors.grey), //输入文本的样式
+              decoration: InputDecoration(
+                hintText: '查询其他城市',
+                hintStyle: TextStyle(fontSize: 14.0, color: Colors.grey),
+                prefixIcon: new Icon(
+                  Icons.search,
+                  color: Colors.grey,
+                  size: 20.0,
+                ),
+              ),
+            ),
+          ));
+    });
+  }
+
+  Future<Null> _handleRefresh() {
+    initState();
+    final Completer<Null> completer = new Completer<Null>();
+    new Timer(const Duration(seconds: 2), () {
+      completer.complete(null);
+    });
+    return completer.future.then((_) {
+      _scaffoldKey.currentState?.showSnackBar(
+          new SnackBar(content: const Text('刷新成功'), action: null));
+    });
   }
 
   Future<List<String>> _getCitiesId() async {
@@ -100,6 +161,18 @@ class CitiesState extends State<Cities> {
     }
   }
 
+  Future<void> _setCitiesId(String id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> ids = prefs.getStringList("citiesids");
+    if (ids == null) {
+      ids = new List();
+    }
+    if (!ids.contains(id)) {
+      ids.add(id);
+    }
+    await prefs.setStringList("citiesids", ids);
+  }
+
   List<Widget> _buildCitiesWeather(Map<String, WeatherInfo> maps) {
     print("_buildCitiesWeather============" + maps.values.length.toString());
     List<Widget> list = new List();
@@ -133,7 +206,7 @@ class CitiesState extends State<Cities> {
       },
       child: new Container(
           padding: EdgeInsets.only(top: 20.0),
-          height: 150.0,
+          height: 200.0,
           alignment: Alignment.center,
           child: Card(
             child: new Stack(
@@ -141,33 +214,41 @@ class CitiesState extends State<Cities> {
                 Container(
                   child: new Image.asset(image, fit: BoxFit.fill),
                   width: 300.0,
+                  height: 200.0,
                 ),
                 Container(
-                  width: 300.0,
-                  decoration: BoxDecoration(
-                      color: Color(
-                    0x33000000,
-                  )),
-                  child: Container(
-                    padding: EdgeInsets.only(top: 10.0,left: 20.0),
-                    alignment: Alignment.topLeft,
-                    child: Column(
-                      children: <Widget>[
-                        Text(
-                          weatherInfo.city,
-                          style: TextStyle(fontSize: 22.0),
-                        ),
-                        Padding(padding: EdgeInsets.only(top: 10.0),),
-                        Container(
-                            child:
-                        Text(weatherInfo.realtime.weather,style: TextStyle(fontSize: 18.0),)),
-
-                        Padding(padding: EdgeInsets.only(top: 10.0),),
-                        Text(weatherInfo.realtime.temp + "℃",style: TextStyle(fontSize: 18.0),)
-                      ],
-                    ),
-                  )
-                )
+                    width: 300.0,
+                    decoration: BoxDecoration(
+                        color: Color(
+                      0x33000000,
+                    )),
+                    child: Container(
+                      padding: EdgeInsets.only(top: 10.0, left: 20.0),
+                      alignment: Alignment.topLeft,
+                      child: Column(
+                        children: <Widget>[
+                          Text(
+                            weatherInfo.city,
+                            style: TextStyle(fontSize: 22.0),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(top: 10.0),
+                          ),
+                          Container(
+                              child: Text(
+                            weatherInfo.realtime.weather,
+                            style: TextStyle(fontSize: 18.0),
+                          )),
+                          Padding(
+                            padding: EdgeInsets.only(top: 10.0),
+                          ),
+                          Text(
+                            weatherInfo.realtime.temp + "℃",
+                            style: TextStyle(fontSize: 18.0),
+                          )
+                        ],
+                      ),
+                    ))
               ],
             ),
           )),

@@ -13,16 +13,16 @@ class HomePage extends StatefulWidget {
   HomePage(this.id);
   @override
   State<StatefulWidget> createState() {
-    return new _HomePageState(id);
+    return new HomePageState(id);
   }
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   double screenWidth = 0.0;
   File _image;
-  List citiesMap;
+  static List citiesMap;
   String extraId;
-  _HomePageState(this.extraId);
+  HomePageState(this.extraId);
   WeatherInfo weatherInfo = new WeatherInfo(
       realtime: new Realtime(),
       pm25: new PM25(),
@@ -65,8 +65,8 @@ class _HomePageState extends State<HomePage> {
           children: <Widget>[
             new Container(
               child: _image == null
-                  ? new Image.asset("images/bg.jpg", fit: BoxFit.fitHeight)
-                  : new Image.file(_image, fit: BoxFit.fitHeight),
+                  ? new Image.asset("images/bg.jpg", fit: BoxFit.fill)
+                  : new Image.file(_image, fit: BoxFit.fill),
               width: double.infinity,
               height: double.infinity,
             ),
@@ -103,7 +103,7 @@ class _HomePageState extends State<HomePage> {
                             controller: searchController,
                             textInputAction: TextInputAction.search,
                             onSubmitted: (String _) {
-                              _fetchWeatherInfo(_getIdByName(_));
+                              _fetchWeatherInfo(getIdByName(_));
                             },
                             maxLines: 1,
                             style: TextStyle(
@@ -334,18 +334,6 @@ class _HomePageState extends State<HomePage> {
     await prefs.setString("cityid", id);
   }
 
-  _setCitiesId(String id) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> ids = prefs.getStringList("citiesids");
-    if (ids == null) {
-      ids = new List();
-    }
-    if(!ids.contains(id)){
-      ids.add(id);
-    }
-    await prefs.setStringList("citiesids", ids);
-  }
-
   Future<String> _getCityId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String id = prefs.get("cityid");
@@ -355,7 +343,7 @@ class _HomePageState extends State<HomePage> {
     return "";
   }
 
-  String _getIdByName(String name) {
+  static String getIdByName(String name) {
     if (citiesMap.length > 0) {
       for (Map map in citiesMap) {
         if (map['city'] == name) {
@@ -374,7 +362,6 @@ class _HomePageState extends State<HomePage> {
     try {
       if (response.statusCode == HttpStatus.ok) {
         _setCityId(id);
-        _setCitiesId(id);
         var json = await response.transform(Utf8Decoder()).join();
         Map map = jsonDecode(json);
         print(map["value"][0].toString());
