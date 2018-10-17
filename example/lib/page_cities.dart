@@ -117,7 +117,7 @@ class CitiesState extends State<Cities> {
   Future<Null> _handleRefresh() {
     initState();
     final Completer<Null> completer = new Completer<Null>();
-    new Timer(const Duration(seconds: 2), () {
+    new Timer(const Duration(seconds: 1), () {
       completer.complete(null);
     });
     return completer.future.then((_) {
@@ -214,6 +214,7 @@ class CitiesState extends State<Cities> {
                 Container(
                   child: new Image.asset(image, fit: BoxFit.fill),
                   height: 200.0,
+                  width: double.infinity,
                 ),
                 Container(
                     decoration: BoxDecoration(
