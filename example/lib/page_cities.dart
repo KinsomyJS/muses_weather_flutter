@@ -205,7 +205,7 @@ class CitiesState extends State<Cities> {
             .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
       },
       child: new Container(
-          padding: EdgeInsets.only(top: 20.0),
+          padding: EdgeInsets.only(top: 20.0,left: 20.0,right: 20.0),
           height: 200.0,
           alignment: Alignment.center,
           child: Card(
@@ -213,11 +213,9 @@ class CitiesState extends State<Cities> {
               children: <Widget>[
                 Container(
                   child: new Image.asset(image, fit: BoxFit.fill),
-                  width: 300.0,
                   height: 200.0,
                 ),
                 Container(
-                    width: 300.0,
                     decoration: BoxDecoration(
                         color: Color(
                       0x33000000,

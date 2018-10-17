@@ -3,7 +3,7 @@
 使用api为魅族天气api，感谢 [https://github.com/jokermonn/-Api]()
 
 ![](https://user-gold-cdn.xitu.io/2018/10/15/166767b9a38b7699?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
-![](https://user-gold-cdn.xitu.io/2018/10/16/1667bf4ffe84185d?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](https://user-gold-cdn.xitu.io/2018/10/17/16681574f51fd73f?imageView2/0/w/1280/h/960/ignore-error/1)
 
 ### 功能
 * 支持全国地级市天气预报
@@ -11,6 +11,7 @@
 * 支持生活指数查看
 * 支持自定义更换背景
 * 保存城市天气列表
+* 下拉刷新城市列表
 
 ### 未完成
 * 保存一系列背景根据天气情况动态更换
