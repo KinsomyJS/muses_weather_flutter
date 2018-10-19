@@ -2,11 +2,11 @@
 
 使用api为魅族天气api，感谢 [https://github.com/jokermonn/-Api]()
 
-![](https://user-gold-cdn.xitu.io/2018/10/19/1668b529f4ff2ddc?w=320&h=680&f=gif&s=5008430)
+![](./sample_image/demonstrate.gif)
 
-![](https://user-gold-cdn.xitu.io/2018/10/15/166767b9a38b7699?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![](./sample_image/1.jpg)
 
-![](https://user-gold-cdn.xitu.io/2018/10/17/16681574f51fd73f?imageView2/0/w/1280/h/960/ignore-error/1)
+![](./sample_image/2.jpg)
 
 ### 功能
 * 支持全国地级市天气预报
