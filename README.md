@@ -1,7 +1,7 @@
 ### Muses是一款用Flutter编写的天气预报应用，代码会持续更新...
 
 使用api为魅族天气api，感谢 [https://github.com/jokermonn/-Api]()
-
+![](https://user-gold-cdn.xitu.io/2018/10/19/1668b529f4ff2ddc?w=320&h=680&f=gif&s=5008430)
 ![](https://user-gold-cdn.xitu.io/2018/10/15/166767b9a38b7699?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
 ![](https://user-gold-cdn.xitu.io/2018/10/17/16681574f51fd73f?imageView2/0/w/1280/h/960/ignore-error/1)
 
