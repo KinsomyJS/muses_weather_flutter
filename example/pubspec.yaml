@@ -22,7 +22,9 @@ dependencies:
   image_picker: ^0.4.10
   shared_preferences: ^0.4.3
   json_annotation: ^1.0.0
-  amap_location_plugin: ^0.1.1
+  amap_location_plugin:
+    git: https://github.com/KinsomyJS/location_plugin.git
+
 
 dev_dependencies:
   flutter_test:

@@ -1,16 +1,19 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:muses_weather_flutter_example/model/weather_info.dart';
 import 'package:muses_weather_flutter_example/page_cities.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:amap_location_plugin/amap_location_plugin.dart';
 
 class HomePage extends StatefulWidget {
   String id;
+
   HomePage(this.id);
+
   @override
   State<StatefulWidget> createState() {
     return new HomePageState(id);
@@ -20,9 +23,14 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   double screenWidth = 0.0;
   File _image;
+  AmapLocation _amapLocation = AmapLocation();
+  StreamSubscription<String> _locationSubscription;
+  String _location;
   static List citiesMap;
   String extraId;
+
   HomePageState(this.extraId);
+
   WeatherInfo weatherInfo = new WeatherInfo(
       realtime: new Realtime(),
       pm25: new PM25(),
@@ -39,19 +47,26 @@ class HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    if(extraId != null){
-      _fetchWeatherInfo(extraId);
-    }else{
-      _getCityId().then((id) {
-        if (id != "") {
-          _fetchWeatherInfo(id);
-        } else {
-          _fetchWeatherInfo("101010100");
-        }
-      });
-    }
+    startLocation();
     _getImagePath();
     _loadCities();
+    if (extraId != null) {
+      _fetchWeatherInfo(extraId);
+      return;
+    }
+    _locationSubscription =
+        _amapLocation.onLocationChanged.listen((String location) {
+      if (!mounted) return;
+      Map<String, dynamic> jsonMap = json.decode(location);
+      _location = jsonMap['city'];
+      print(_location);
+      if (_location != "" && citiesMap != null) {
+        stopLocation();
+        print(_location.substring(0, _location.length - 1));
+        _fetchWeatherInfo(
+            getIdByName(_location.substring(0, _location.length - 1)));
+      }
+    });
   }
 
   @override
@@ -86,13 +101,14 @@ class HomePageState extends State<HomePage> {
                           Icons.list,
                           color: Colors.white,
                         ),
-                        onTap: (){
-                          Navigator.push<String>(context, new MaterialPageRoute(builder: (BuildContext context){
+                        onTap: () {
+                          Navigator.push<String>(context, new MaterialPageRoute(
+                              builder: (BuildContext context) {
                             return new Cities();
                           }));
                         },
                       ),
-                      padding: EdgeInsets.only(top: 5.0,right: 20.0),
+                      padding: EdgeInsets.only(top: 5.0, right: 20.0),
                       alignment: Alignment.centerRight,
                     ),
                     Container(
@@ -106,8 +122,9 @@ class HomePageState extends State<HomePage> {
                               _fetchWeatherInfo(getIdByName(_));
                             },
                             maxLines: 1,
-                            style: TextStyle(
-                                fontSize: 16.0, color: Colors.white), //输入文本的样式
+                            style:
+                                TextStyle(fontSize: 16.0, color: Colors.white),
+                            //输入文本的样式
                             decoration: InputDecoration(
                               hintText: '查询其他城市',
                               hintStyle: TextStyle(
@@ -202,6 +219,7 @@ class HomePageState extends State<HomePage> {
                     InkWell(
                       onTap: () {
                         getImage();
+//                        getLocation();
                       },
                       child: Text(
                         "自定义背景",
@@ -343,6 +361,14 @@ class HomePageState extends State<HomePage> {
     return "";
   }
 
+  Future<void> startLocation() async {
+    await _amapLocation.startLocation;
+  }
+
+  Future<void> stopLocation() async {
+    await _amapLocation.stopLocation;
+  }
+
   static String getIdByName(String name) {
     if (citiesMap.length > 0) {
       for (Map map in citiesMap) {
@@ -350,6 +376,14 @@ class HomePageState extends State<HomePage> {
           return map['cityid'];
         }
       }
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (_locationSubscription != null) {
+      _locationSubscription.cancel();
     }
   }
 
@@ -374,6 +408,20 @@ class HomePageState extends State<HomePage> {
       }
     } catch (exception) {
       print("=============" + exception.toString() + "===============");
+    }
+  }
+
+  Future<String> getLocation() async {
+    String location;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      location = await _amapLocation.getLocation;
+      Map<String, dynamic> jsonMap = json.decode(location);
+      String city = jsonMap['city'];
+      print("getLocation----------" + city);
+      return city;
+    } on PlatformException {
+      return 'Failed to get location.';
     }
   }
 }
