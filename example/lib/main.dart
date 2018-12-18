@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:muses_weather_flutter_example/page_cities.dart';
-
+import 'package:flutter/foundation.dart';
 import 'package:muses_weather_flutter_example/page_home.dart';
 
-void main() => runApp(new MyApp());
+void main(){
+  debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+  runApp(new MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
